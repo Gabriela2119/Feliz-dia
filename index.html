@@ -8,7 +8,6 @@
         body {
             margin: 0;
             overflow: hidden;
-            /* Cielo azul y suelo de pasto verde adaptados de tu código original */
             background: linear-gradient(to bottom, #003c78 0%, #003c78 65%, #1b5e20 65%, #004d1a 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
@@ -89,14 +88,16 @@
         <button id="btn-empezar">Recibir Ramo</button>
     </div>
 
+    <!-- Frases flotantes -->
     <div id="frase-0" class="frase-flotante" style="top: 80px;">¡Espero que tengan un excelente día!</div>
     <div id="frase-1" class="frase-flotante" style="top: 128px;">Que todo proyecto que inicien vaya al 100%.</div>
     <div id="frase-2" class="frase-flotante" style="top: 176px;">Mucho éxito en lo que hagan hoy.</div>
     <div id="frase-3" class="frase-flotante" style="top: 224px;">Un detalle por acá. ¡La gratitud por su amistad!</div>
     <div id="frase-4" class="frase-flotante" style="top: 272px;">¡A romperla hoy! Un fuerte abrazo.</div>
 
+    <!-- Audio apuntando directamente al archivo raíz sin carpetas -->
     <audio id="musica-fondo" loop>
-        <source src="assets/musica.mp3" type="audio/mp3">
+        <source src="música.mp3" type="audio/mp3">
     </audio>
 
     <canvas id="lienzo"></canvas>
@@ -105,13 +106,11 @@
         const canvas = document.getElementById('lienzo');
         const ctx = canvas.getContext('2d');
 
-        // Configuración de pantalla vertical similar a celular (450x800)
         const ANCHO = 450;
         const ALTO = 800;
         canvas.width = ANCHO;
         canvas.height = ALTO;
 
-        // Paleta de colores exacta de tu script
         const AZUL_FONDO = "#003c78";
         const VERDE_PASTO = "#1b5e20";
         const VERDE_TALLO = "#4caf50";
@@ -124,7 +123,6 @@
         let velocidad_crecimiento = 0.003;
         let tiempo_viento = 0.0;
 
-        // Estrellas de fondo
         const estrellas = [];
         for (let i = 0; i < 15; i++) {
             estrellas.push({
@@ -134,7 +132,6 @@
             });
         }
 
-        // Configuración del ramo de girasoles
         const flores_ramo = [
             { x: 0, y: 0, escala: 1.0, desfase: 0 },
             { x: -45, y: 20, escala: 0.9, desfase: 0.5 },
@@ -144,11 +141,9 @@
         ];
 
         function dibujarEntorno() {
-            // Fondo de cielo
             ctx.fillStyle = AZUL_FONDO;
             ctx.fillRect(0, 0, ANCHO, ALTO);
 
-            // Estrellas
             ctx.fillStyle = "#ffffff";
             estrellas.forEach(e => {
                 ctx.beginPath();
@@ -156,7 +151,6 @@
                 ctx.fill();
             });
 
-            // Suelo orgánico (pasto)
             ctx.fillStyle = VERDE_PASTO;
             ctx.fillRect(0, ALTO - 130, ANCHO, 130);
             
@@ -171,7 +165,6 @@
             ctx.translate(x, y);
             ctx.rotate(angulo);
 
-            // Pétalo exterior (naranja)
             ctx.fillStyle = NARANJA_PETALO;
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -179,7 +172,6 @@
             ctx.bezierCurveTo(largo * 0.8, ancho / 3, largo * 0.4, ancho / 2, 0, 0);
             ctx.fill();
 
-            // Pétalo interior (amarillo)
             ctx.fillStyle = AMARILLO_PETALO;
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -197,7 +189,6 @@
             let x_flor = x_base + fuerza_brisa;
             let y_flor = y_base - h_actual;
 
-            // Tallo y hojas
             if (prog_actual > 0.05) {
                 let grosor = 4 + 3 * prog_actual;
                 let x_medio = x_base + fuerza_brisa * 0.4;
@@ -224,7 +215,6 @@
                 }
             }
 
-            // Corona de flores (pétalos y centro)
             if (prog_actual > 0.3) {
                 let prog_flor = (prog_actual - 0.3) / 0.7;
                 let radio_centro = 24 * prog_flor;
@@ -263,7 +253,6 @@
             }
         }
 
-        // Control del Botón de Inicio
         document.getElementById('btn-empezar').addEventListener('click', () => {
             const musica = document.getElementById('musica-fondo');
             musica.play().catch(e => console.log("Audio bloqueado por el navegador o archivo no encontrado"));
@@ -276,10 +265,8 @@
             }, 1000);
         });
 
-        // Bucle Principal de Renderizado
         function animar() {
             tiempo_viento += 0.035;
-
             dibujarEntorno();
 
             if (estado === "ANIMACION") {
@@ -294,7 +281,6 @@
                 let x_centro_ramo = ANCHO / 2;
                 let y_suelo = ALTO - 90;
 
-                // Dibujar la base de envoltura del ramo
                 if (progreso > 0.2) {
                     ctx.fillStyle = "#be9b78";
                     ctx.beginPath();
@@ -306,13 +292,11 @@
                     ctx.fill();
                 }
 
-                // Dibujar cada girasol del ramo
                 flores_ramo.forEach(f => {
                     let h_maxima = 210 * f.escala;
                     dibujarGirasolPremium(x_centro_ramo + f.x, y_suelo + f.y, h_maxima, progreso, f.desfase);
                 });
 
-                // Pequeño detalle de la cinta del ramo
                 if (progreso > 0.5) {
                     ctx.fillStyle = "#dc3232";
                     ctx.beginPath();
