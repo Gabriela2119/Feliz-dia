@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Especial - Flores Amarillas</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* Cielo azul y suelo de pasto verde adaptados de tu código original */
+            background: linear-gradient(to bottom, #003c78 0%, #003c78 65%, #1b5e20 65%, #004d1a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* PORTADA */
+        #portada {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 30, 60, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease-in-out;
+            color: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #portada h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 200, 0, 0.5);
+        }
+
+        #portada h2 {
+            color: #ffc800;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        #btn-empezar {
+            padding: 14px 35px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #ff9100;
+            color: #222;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 145, 0, 0.4);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        #btn-empezar:hover {
+            transform: scale(1.08);
+            background: #ffc800;
+        }
+
+        /* FRASES FLOTANTES EN EL CIELO */
+        .frase-flotante {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #f5f5f5;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000a1e, 0 0 8px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="portada">
+        <h1>¡Feliz Día de las<br>Flores Amarillas!</h1>
+        <h2>Jeft, Vero y Franck</h2>
+        <button id="btn-empezar">Recibir Ramo</button>
+    </div>
+
+    <div id="frase-0" class="frase-flotante" style="top: 80px;">¡Espero que tengan un excelente día!</div>
+    <div id="frase-1" class="frase-flotante" style="top: 128px;">Que todo proyecto que inicien vaya al 100%.</div>
+    <div id="frase-2" class="frase-flotante" style="top: 176px;">Mucho éxito en lo que hagan hoy.</div>
+    <div id="frase-3" class="frase-flotante" style="top: 224px;">Un detalle por acá. ¡La gratitud por su amistad!</div>
+    <div id="frase-4" class="frase-flotante" style="top: 272px;">¡A romperla hoy! Un fuerte abrazo.</div>
+
+    <audio id="musica-fondo" loop>
+        <source src="assets/musica.mp3" type="audio/mp3">
+    </audio>
+
+    <canvas id="lienzo"></canvas>
+
+    <script>
+        const canvas = document.getElementById('lienzo');
+        const ctx = canvas.getContext('2d');
+
+        // Configuración de pantalla vertical similar a celular (450x800)
+        const ANCHO = 450;
+        const ALTO = 800;
+        canvas.width = ANCHO;
+        canvas.height = ALTO;
+
+        // Paleta de colores exacta de tu script
+        const AZUL_FONDO = "#003c78";
+        const VERDE_PASTO = "#1b5e20";
+        const VERDE_TALLO = "#4caf50";
+        const MARRON_CENTRO = "#783c0f";
+        const NARANJA_PETALO = "#ff9100";
+        const AMARILLO_PETALO = "#ffc800";
+
+        let estado = "PORTADA";
+        let progreso = 0.0;
+        let velocidad_crecimiento = 0.003;
+        let tiempo_viento = 0.0;
+
+        // Estrellas de fondo
+        const estrellas = [];
+        for (let i = 0; i < 15; i++) {
+            estrellas.push({
+                x: Math.random() * (ANCHO - 40) + 20,
+                y: Math.random() * (ALTO - 250) + 20,
+                radio: Math.random() * 1 + 1
+            });
+        }
+
+        // Configuración del ramo de girasoles
+        const flores_ramo = [
+            { x: 0, y: 0, escala: 1.0, desfase: 0 },
+            { x: -45, y: 20, escala: 0.9, desfase: 0.5 },
+            { x: 45, y: 15, escala: 0.9, desfase: 1.0 },
+            { x: -25, y: -20, escala: 0.8, desfase: 1.5 },
+            { x: 25, y: -25, escala: 0.8, desfase: 2.0 }
+        ];
+
+        function dibujarEntorno() {
+            // Fondo de cielo
+            ctx.fillStyle = AZUL_FONDO;
+            ctx.fillRect(0, 0, ANCHO, ALTO);
+
+            // Estrellas
+            ctx.fillStyle = "#ffffff";
+            estrellas.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radio, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Suelo orgánico (pasto)
+            ctx.fillStyle = VERDE_PASTO;
+            ctx.fillRect(0, ALTO - 130, ANCHO, 130);
+            
+            ctx.beginPath();
+            ctx.arc(100, ALTO - 110, 75, 0, Math.PI * 2);
+            ctx.arc(350, ALTO - 115, 90, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function dibujarPetaloGirasol(x, y, angulo, largo, ancho) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angulo);
+
+            // Pétalo exterior (naranja)
+            ctx.fillStyle = NARANJA_PETALO;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(largo * 0.4, -ancho / 2, largo * 0.8, -ancho / 3, largo, 0);
+            ctx.bezierCurveTo(largo * 0.8, ancho / 3, largo * 0.4, ancho / 2, 0, 0);
+            ctx.fill();
+
+            // Pétalo interior (amarillo)
+            ctx.fillStyle = AMARILLO_PETALO;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(largo * 0.3, -ancho / 3, largo * 0.6, -ancho / 4, largo * 0.8, 0);
+            ctx.bezierCurveTo(largo * 0.6, ancho / 4, largo * 0.3, ancho / 3, 0, 0);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function dibujarGirasolPremium(x_base, y_base, h_max, prog_actual, desfase_viento) {
+            let h_actual = h_max * prog_actual;
+            let fuerza_brisa = Math.sin(tiempo_viento + desfase_viento) * 11 * prog_actual;
+
+            let x_flor = x_base + fuerza_brisa;
+            let y_flor = y_base - h_actual;
+
+            // Tallo y hojas
+            if (prog_actual > 0.05) {
+                let grosor = 4 + 3 * prog_actual;
+                let x_medio = x_base + fuerza_brisa * 0.4;
+                let y_medio = y_base - h_actual * 0.5;
+
+                ctx.strokeStyle = VERDE_TALLO;
+                ctx.lineWidth = grosor;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(x_base, y_base);
+                ctx.lineTo(x_medio, y_medio);
+                ctx.lineTo(x_flor, y_flor);
+                ctx.stroke();
+
+                if (prog_actual > 0.4) {
+                    let prog_hoja = (prog_actual - 0.4) / 0.6;
+                    let largo_hoja = 32 * prog_hoja;
+                    
+                    ctx.fillStyle = VERDE_TALLO;
+                    ctx.beginPath();
+                    ctx.ellipse(x_medio - largo_hoja / 2, y_medio - 5, largo_hoja / 2, 7, -0.3, 0, Math.PI * 2);
+                    ctx.ellipse(x_medio + largo_hoja / 2, y_medio - 12, largo_hoja / 2, 7, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Corona de flores (pétalos y centro)
+            if (prog_actual > 0.3) {
+                let prog_flor = (prog_actual - 0.3) / 0.7;
+                let radio_centro = 24 * prog_flor;
+                let largo_p = 46 * prog_flor;
+                let ancho_p = 18 * prog_flor;
+
+                let num_petalos = 20;
+                for (let i = 0; i < num_petalos; i++) {
+                    let angulo = i * (2 * Math.PI / num_petalos) + (tiempo_viento * 0.015);
+                    dibujarPetaloGirasol(x_flor, y_flor, angulo, largo_p, ancho_p);
+                }
+
+                if (radio_centro > 0) {
+                    ctx.fillStyle = "#3c1e05";
+                    ctx.beginPath();
+                    ctx.arc(x_flor, y_flor, radio_centro + 1, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = MARRON_CENTRO;
+                    ctx.beginPath();
+                    ctx.arc(x_flor, y_flor, radio_centro, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function actualizarFrases() {
+            for (let i = 0; i < 5; i++) {
+                let limite_aparicion = 0.2 + (i * 0.14);
+                let elemento = document.getElementById(`frase-${i}`);
+                if (progreso >= limite_aparicion) {
+                    elemento.style.opacity = "1";
+                } else {
+                    elemento.style.opacity = "0";
+                }
+            }
+        }
+
+        // Control del Botón de Inicio
+        document.getElementById('btn-empezar').addEventListener('click', () => {
+            const musica = document.getElementById('musica-fondo');
+            musica.play().catch(e => console.log("Audio bloqueado por el navegador o archivo no encontrado"));
+
+            const portada = document.getElementById('portada');
+            portada.style.opacity = '0';
+            setTimeout(() => {
+                portada.style.display = 'none';
+                estado = "ANIMACION";
+            }, 1000);
+        });
+
+        // Bucle Principal de Renderizado
+        function animar() {
+            tiempo_viento += 0.035;
+
+            dibujarEntorno();
+
+            if (estado === "ANIMACION") {
+                if (progreso < 1.0) {
+                    progreso += velocidad_crecimiento;
+                } else {
+                    progreso = 1.0;
+                }
+
+                actualizarFrases();
+
+                let x_centro_ramo = ANCHO / 2;
+                let y_suelo = ALTO - 90;
+
+                // Dibujar la base de envoltura del ramo
+                if (progreso > 0.2) {
+                    ctx.fillStyle = "#be9b78";
+                    ctx.beginPath();
+                    ctx.moveTo(x_centro_ramo - 25, y_suelo);
+                    ctx.lineTo(x_centro_ramo + 25, y_suelo);
+                    ctx.lineTo(x_centro_ramo + 45, y_suelo - 60);
+                    ctx.lineTo(x_centro_ramo - 45, y_suelo - 60);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Dibujar cada girasol del ramo
+                flores_ramo.forEach(f => {
+                    let h_maxima = 210 * f.escala;
+                    dibujarGirasolPremium(x_centro_ramo + f.x, y_suelo + f.y, h_maxima, progreso, f.desfase);
+                });
+
+                // Pequeño detalle de la cinta del ramo
+                if (progreso > 0.5) {
+                    ctx.fillStyle = "#dc3232";
+                    ctx.beginPath();
+                    ctx.arc(x_centro_ramo, y_suelo - 30, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(animar);
+        }
+
+        animar();
+    </script>
+</body>
+</html>
